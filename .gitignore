@@ -40,7 +40,7 @@ Temporary Items
 *.icloud
 
 ### PyCharm ###
-*/.idea/
+#*/.idea/
 
 
 
