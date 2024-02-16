@@ -40,9 +40,9 @@ def get_info_for_post(location: str) -> Tuple[str, datetime.date, str]:
     return title, date, body
 
 
-def get_database():
+def get_database(location: str = "data/gpt_data.db"):
     # open the database connection
-    connection = sqlite3.connect("data/gpt_data.db")
+    connection = sqlite3.connect(location)
     cursor = connection.cursor()
 
     # check if table is present and if not, create it
@@ -69,12 +69,12 @@ def get_response_from_database(connection, hash_query: str, model: str):
     cursor = connection.cursor()
 
     cursor.execute("SELECT response FROM gpt_table WHERE hash_query = ? AND model = ?", (hash_query, model))
-    result = cursor.fetchone()  # Eventual test to add: what if there are multiple matches? Shouldn't be...
+    result = cursor.fetchall()  # There shouldn't be multiple matches
 
     if result is not None:
         if not len(result) == 1:
             raise LookupError(f"Expected only 1 result but found {str(len(result))}")
-        return result[0]  # If matching row exists, return value from 'response' column
+        return result[0][0]  # If matching row exists, return value from 'response' column
     else:
         print("no match found!")
         return None

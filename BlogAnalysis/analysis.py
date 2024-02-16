@@ -40,7 +40,6 @@ def extract_numeral(input_string: str) -> Union[float, None]:
 def get_gpt(postbody: str, promptkey: str, model="gpt-3.5-turbo") -> str:
     conn = get_database()
     response = get_response_from_database(conn, calculate_md5(postbody, promptkey), model)
-    print(response, type(response))
     if response is not None:  # i.e., response was already present in database
         return response
     else:
@@ -90,7 +89,6 @@ def make_features(post: Tuple[str, datetime, str]) -> Dict[str, Any]:
         "topic": get_gpt(body, "topic"),
         "age_estimate": extract_numeral(get_gpt(body, "age"))
     }
-    print(features)
     return features
 
 

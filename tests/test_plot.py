@@ -6,5 +6,3 @@ def test_create_scatter_plot():
     mock_data = generate_mock_data()
     figure, _ = create_scatter_plot(mock_data)
     assert isinstance(figure, Figure)
-
-
