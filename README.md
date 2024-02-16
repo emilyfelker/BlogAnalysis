@@ -11,7 +11,7 @@ via the `OpenAI` API, and its responses are cached in a `sqlite3` database
 to avoid unnecessary API calls when re-running the program.
 The program uses `Matplotlib` and `NumPy` to create graphs that show how
 certain numerical features change over time. One question I had was: based
-on each blog post's text, how acccurately can ChatGPT estimate my age?
+on each blog post's text, how accurately can ChatGPT estimate my age?
 
 ## Usage Examples
 
