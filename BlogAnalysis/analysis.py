@@ -1,21 +1,18 @@
-# To do:
-# see if chatGPT can write a decent test for data extraction
-# can chatGPT detect the presence/absence of certain themes or emotions or tones/moods in posts over time?
-# subject matter / themes / topics
-# next project: provide a summary/retelling of my life story by month or by year
-# then can it write the story of my future? (or rewrite the story of certain years: what if...) predict my job, etc.?
-# what can it determine about my personality traits?
 import re
 import os
+import hashlib
 from datetime import datetime
+from time import sleep
 from dotenv import load_dotenv
 from openai import OpenAI
 from tenacity import (
     retry,
     stop_after_attempt,
-    wait_random_exponential,
+    wait_fixed,
 )
 from typing import List, Dict, Union, Any, Tuple
+from BlogAnalysis.data import get_database, get_response_from_database, add_to_database
+
 
 load_dotenv()
 client = OpenAI(
@@ -39,8 +36,25 @@ def extract_numeral(input_string: str) -> Union[float, None]:
     return average
 
 
-@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-def get_gpt(postbody: str, promptkey: str) -> str:
+# Look up hash of postbody and prompt in database
+def get_gpt(postbody: str, promptkey: str, model="gpt-3.5-turbo") -> str:
+    conn = get_database()
+    response = get_response_from_database(conn, calculate_md5(postbody, promptkey), model)
+    print(response, type(response))
+    if response is not None:  # i.e., response was already present in database
+        return response
+    else:
+        print("getting from api")
+        response = get_gpt_from_api(postbody, promptkey, model)  # need to make API call
+        return response
+
+
+@retry(wait=wait_fixed(60), stop=stop_after_attempt(1))
+def get_gpt_from_api(postbody: str, promptkey: str, model="gpt-3.5-turbo") -> str:
+
+    sleep(20.1)  # to deal with rate-limit of 3 requests per minute
+
+    # make API call
     response = client.chat.completions.create(
         messages=[
             {"role": "system",
@@ -48,10 +62,23 @@ def get_gpt(postbody: str, promptkey: str) -> str:
             {"role": "user",
              "content": postbody},
         ],
-        model="gpt-3.5-turbo",
+        model=model,
         temperature=0,
     )
-    return response.choices[0].message.content
+    # save response from API call
+    response_to_save = response.choices[0].message.content
+
+    # save response to database
+    conn = get_database()
+    add_to_database(conn, calculate_md5(postbody, promptkey), model, response_to_save)
+
+    return response_to_save
+
+
+def calculate_md5(postbody: str, promptkey: str) -> str:
+    combined_string = ''.join([postbody, prompts[promptkey]])
+    md5_hash = hashlib.md5(combined_string.encode()).hexdigest()
+    return md5_hash
 
 
 def make_features(post: Tuple[str, datetime, str]) -> Dict[str, Any]:
@@ -85,3 +112,9 @@ def preview_features(dataset_with_features: List[Tuple[str, datetime, str, Dict[
         for feature, value in features.items():
             print(f"  {feature}: {value}")
         print()
+
+
+def show_summaries(dataset_with_features):
+    for blogpost in dataset_with_features:
+        title, date, content, features = blogpost
+        print(features["topic"])

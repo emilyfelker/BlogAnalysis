@@ -1,4 +1,5 @@
 import os
+import sqlite3
 from bs4 import BeautifulSoup
 from datetime import datetime
 from typing import List, Tuple
@@ -37,3 +38,43 @@ def get_info_for_post(location: str) -> Tuple[str, datetime.date, str]:
     content_formatted = content_selection.replace("<br/>", "\n")
     body = BeautifulSoup(content_formatted, 'html.parser').text
     return title, date, body
+
+
+def get_database():
+    # open the database connection
+    connection = sqlite3.connect("data/gpt_data.db")
+    cursor = connection.cursor()
+
+    # check if table is present and if not, create it
+    cursor.execute(f"PRAGMA table_info({'gpt_table'})")
+    result = cursor.fetchall()
+    if len(result) == 0:  # would result if database did not contain 'gpt_table' table
+        cursor.execute("CREATE TABLE gpt_table (hash_query TEXT, model TEXT, response TEXT)")
+    cursor.close()
+
+    connection.commit()
+    return connection
+
+
+def add_to_database(connection, hash_query: str, model: str, response: str):
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO gpt_table VALUES (?, ?, ?)", (hash_query, model, response))
+
+    connection.commit()
+    cursor.close()
+    connection.close()
+
+
+def get_response_from_database(connection, hash_query: str, model: str):
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT response FROM gpt_table WHERE hash_query = ? AND model = ?", (hash_query, model))
+    result = cursor.fetchone()  # Eventual test to add: what if there are multiple matches? Shouldn't be...
+
+    if result is not None:
+        if not len(result) == 1:
+            raise LookupError(f"Expected only 1 result but found {str(len(result))}")
+        return result[0]  # If matching row exists, return value from 'response' column
+    else:
+        print("no match found!")
+        return None
