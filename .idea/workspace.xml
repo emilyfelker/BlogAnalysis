@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="49b47f6d-7316-4b30-b31a-346ce283607c" name="Changes" comment="Modified program to add persistent cashing to GPT calls">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
