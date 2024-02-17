@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 
-def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi=100) -> Tuple[Figure, Any]:
+def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi=100, figsize=(8, 6)) -> Tuple[Figure, Any]:
     ages = [blogpost[-1]["age_of_emily"] for blogpost in dataset]
     y_data = [blogpost[-1][y_variable] for blogpost in dataset]
 
@@ -17,6 +17,7 @@ def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi
 
     y_label = y_variable.replace("_", " ").title()
 
+    plt.figure(figsize=figsize)
     plt.scatter(ages_filtered, y_data_filtered, marker='o', color='tab:purple', alpha=0.5, label='Blogpost')
 
     # Calculate the best-fit line
@@ -64,5 +65,6 @@ if __name__ == "__main__":
                                       y_variable="age_estimate",
                                       title="Actual Age vs. GPT Estimate (Mock Data)",
                                       filename="mock_data_graphed.png",
-                                      dpi=300)
+                                      dpi=150,
+                                      figsize=(6,4))
     plt.show()
