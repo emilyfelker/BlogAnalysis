@@ -33,6 +33,7 @@ def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi
 
     plt.legend()
     plt.grid(True)
+    plt.tight_layout()
 
     if filename is not None:
         plt.savefig(filename, dpi=dpi)
@@ -66,5 +67,5 @@ if __name__ == "__main__":
                                       title="Actual Age vs. GPT Estimate (Mock Data)",
                                       filename="mock_data_graphed.png",
                                       dpi=150,
-                                      figsize=(6,4))
+                                      figsize=(4.8, 3.6))
     plt.show()

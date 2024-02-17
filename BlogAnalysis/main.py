@@ -19,4 +19,4 @@ if __name__ == '__main__':
                         title="Actual Age vs. GPT Estimate",
                         filename="output/real_data_graphed.png",
                         dpi=150,
-                        figsize=(6, 4))
+                        figsize=(4.8, 3.6))
