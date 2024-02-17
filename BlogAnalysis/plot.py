@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 
-def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi=100, figsize=(8, 6)) -> Tuple[Figure, Any]:
+def create_scatter_plot(dataset, y_variable: str, title: str, filename=None, dpi=100, figsize=(6.4, 4.8)) -> Tuple[Figure, Any]:
     ages = [blogpost[-1]["age_of_emily"] for blogpost in dataset]
     y_data = [blogpost[-1][y_variable] for blogpost in dataset]
 
