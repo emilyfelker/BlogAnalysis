@@ -1,5 +1,7 @@
 # Custom ignores:
 XangaBlogPosts/
+/blog_vectorstore.faiss/
+
 # also .env but that is below already
 
 
