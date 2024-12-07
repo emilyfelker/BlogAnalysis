@@ -9,9 +9,11 @@ from BlogAnalysis.data import get_blogpost_dataset
 
 # TODO: Contribute to LangChain by making the load_local raise a FileNotFound error rather than a Runtime error
 # TODO: tiktoken ought to be made a dependency of LangChain
-# TODO: gitignore the blog vectorstore
-# TODO: consider just running this instead of main
-# TODO: add input prompt for user
+
+# TODO: check that I'm maximizing # of tokens for LLM
+# TODO: add tests
+# TODO: add type annotations
+# TODO: try other search types besides similarity search, and use LLM to determine which type of search to use
 
 DB_LOCATION = "blog_vectorstore.faiss"
 vectorstore = None
@@ -73,3 +75,17 @@ def generate_answer(question:str) -> str:
 
     llm = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
     return llm.invoke(prompt).content
+
+
+def ask_question():
+    print("Welcome to the Blog Analysis Query Tool!")
+    while True:
+        question = input("Enter your query (or type 'exit' to quit): ")
+        if question.lower() == 'exit':
+            print("Goodbye!")
+            break
+        try:
+            answer = generate_answer(question)
+            print(f"Answer:\n{answer}\n")
+        except Exception as e:
+            print(f"An error occurred: {e}\n")

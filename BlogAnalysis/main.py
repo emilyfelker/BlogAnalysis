@@ -1,7 +1,7 @@
 from BlogAnalysis.data import get_blogpost_dataset
 from analysis import add_features_to_dataset, preview_features, show_summaries
 from plot import create_scatter_plot
-from rag import generate_answer
+from rag import generate_answer, ask_question
 
 def demo_chatgpt_analysis():
     # Load dataset
@@ -25,7 +25,8 @@ def demo_chatgpt_analysis():
                         figsize=(6.4, 4.8))
 
 def demo_rag():
-    print(generate_answer("Emily's lovers?"))
+    ask_question()
+    # generate_answer("Emily's lovers?"))
 
 if __name__ == '__main__':
 
