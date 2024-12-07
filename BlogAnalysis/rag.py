@@ -12,7 +12,7 @@ from BlogAnalysis.data import get_blogpost_dataset
 
 # TODO: check that I'm maximizing # of tokens for LLM
 # TODO: add tests
-# TODO: add type annotations
+# TODO: get embeddings for fuller blogpost dataset
 # TODO: try other search types besides similarity search, and use LLM to determine which type of search to use
 
 DB_LOCATION = "blog_vectorstore.faiss"
@@ -20,7 +20,7 @@ vectorstore = None
 
 load_dotenv()
 
-def preprocess_blog_posts(blog_posts) -> list[Document]:
+def preprocess_blog_posts(blog_posts: list[tuple[str, any, str]]) -> list[Document]:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     documents = []
     for title, date, content in blog_posts:
@@ -35,7 +35,7 @@ def preprocess_blog_posts(blog_posts) -> list[Document]:
     return documents
 
 
-def create_embeddings_db(processed_documents) -> FAISS:
+def create_embeddings_db(processed_documents: list[Document]) -> FAISS:
     embedding_model = OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"])
     vectorstore = FAISS.from_documents(processed_documents, embedding_model)
     vectorstore.save_local(DB_LOCATION)
@@ -45,8 +45,11 @@ def create_embeddings_db(processed_documents) -> FAISS:
 
 def load_embeddings() -> FAISS:
     try:
-        vectorstore = FAISS.load_local(DB_LOCATION, OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"]),
-                                       allow_dangerous_deserialization=True)
+        vectorstore = FAISS.load_local(
+            DB_LOCATION,
+            OpenAIEmbeddings(openai_api_key=os.environ["OPENAI_API_KEY"]),
+            allow_dangerous_deserialization=True
+        )
         print("Vector store loaded successfully!")
     except RuntimeError:
         print("Vector store not found, creating a new one...")
@@ -56,14 +59,14 @@ def load_embeddings() -> FAISS:
     return vectorstore
 
 
-def query_vectorstore(question, k=5) -> list[Document]:
+def query_vectorstore(question: str, k: int = 5) -> list[Document]:
     global vectorstore
     if not vectorstore:
         vectorstore = load_embeddings()
     return vectorstore.similarity_search(question, k)
 
 
-def generate_answer(question:str) -> str:
+def generate_answer(question: str) -> str:
     supporting_documents = query_vectorstore(question)
 
     combined_docs = "\n---\n".join([doc.page_content for doc in supporting_documents])
@@ -77,7 +80,7 @@ def generate_answer(question:str) -> str:
     return llm.invoke(prompt).content
 
 
-def ask_question():
+def ask_question() -> None:
     print("Welcome to the Blog Analysis Query Tool!")
     while True:
         question = input("Enter your query (or type 'exit' to quit): ")
