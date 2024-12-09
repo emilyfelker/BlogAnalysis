@@ -106,7 +106,7 @@ Goodbye!
 Answers can also be generated 
 programatically by using the RAG 
 functions directly in Python:
- ```
+ ```python
 from BlogAnalysis.rag import generate_answer
 
 question = "Who were Emily's lovers?"
