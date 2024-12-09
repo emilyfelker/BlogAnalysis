@@ -1,4 +1,5 @@
 import os
+import tiktoken
 from dotenv import load_dotenv
 from langchain.schema import Document, HumanMessage
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -8,17 +9,20 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from BlogAnalysis.data import get_blogpost_dataset
 
 # TODO: Contribute to LangChain by making the load_local raise a FileNotFound error rather than a Runtime error
-# TODO: tiktoken ought to be made a dependency of LangChain
+# TODO: Tiktoken ought to be made a dependency of LangChain
 
-# TODO: check that I'm maximizing # of tokens for LLM
-# TODO: add tests
-# TODO: get embeddings for fuller blogpost dataset
-# TODO: try other search types besides similarity search, and use LLM to determine which type of search to use
+# TODO: Check for efficient token usage with API calls
+# TODO: Get embeddings for fuller blogpost dataset
+# TODO: Try other search types besides similarity search & use LLM to determine which type of search to use
+# TODO: Save questions and answers to output file to store them, because they are interesting!
+# TODO: Add unit tests for RAG functions
+
 
 DB_LOCATION = "blog_vectorstore.faiss"
 vectorstore = None
 
 load_dotenv()
+
 
 def preprocess_blog_posts(blog_posts: list[tuple[str, any, str]]) -> list[Document]:
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
@@ -33,6 +37,11 @@ def preprocess_blog_posts(blog_posts: list[tuple[str, any, str]]) -> list[Docume
                 )
             )
     return documents
+
+
+encoding = tiktoken.encoding_for_model("gpt-4")
+def count_tokens(text: str) -> int:
+    return len(encoding.encode(text))
 
 
 def create_embeddings_db(processed_documents: list[Document]) -> FAISS:
@@ -53,7 +62,7 @@ def load_embeddings() -> FAISS:
         print("Vector store loaded successfully!")
     except RuntimeError:
         print("Vector store not found, creating a new one...")
-        dataset = get_blogpost_dataset("data/XangaBlogPosts")[:10]
+        dataset = get_blogpost_dataset("data/XangaBlogPosts")  # [:100] to do partial dataset
         processed_documents = preprocess_blog_posts(dataset)
         vectorstore = create_embeddings_db(processed_documents)
     return vectorstore
@@ -73,10 +82,10 @@ def generate_answer(question: str) -> str:
 
     prompt = [
         HumanMessage(content=f"These documents contain the answer:\n{combined_docs}\n"
-                             f"Please use those documents to answer the following question:\n{question}")
+                             f"Please use those documents to concisely answer the following question:\n{question}")
     ]
 
-    llm = ChatOpenAI(model_name="gpt-4o", temperature=0.0)
+    llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.0)
     return llm.invoke(prompt).content
 
 

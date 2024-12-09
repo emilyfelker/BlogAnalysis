@@ -1,7 +1,7 @@
 from BlogAnalysis.data import get_blogpost_dataset
 from analysis import add_features_to_dataset, preview_features, show_summaries
 from plot import create_scatter_plot
-from rag import generate_answer, ask_question
+from rag import generate_answer, ask_question, count_tokens, preprocess_blog_posts
 
 def demo_chatgpt_analysis():
     # Load dataset
@@ -34,5 +34,11 @@ if __name__ == '__main__':
 
     demo_rag()
 
+    # dataset = get_blogpost_dataset("data/XangaBlogPosts")[:10]
+    # processed_documents = preprocess_blog_posts(dataset)
+    #
+    # for doc in processed_documents:
+    #     print(f"Tokens: {count_tokens(doc.page_content)}, Content: {doc.page_content[:50]}...")
+    #
 
 
