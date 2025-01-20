@@ -30,9 +30,9 @@ def demo_rag():
 
 if __name__ == '__main__':
 
-    #demo_chatgpt_analysis()
+    demo_chatgpt_analysis()
 
-    demo_rag()
+    #demo_rag()
 
     # dataset = get_blogpost_dataset("data/XangaBlogPosts")[:10]
     # processed_documents = preprocess_blog_posts(dataset)

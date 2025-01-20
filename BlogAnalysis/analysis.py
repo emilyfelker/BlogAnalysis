@@ -11,7 +11,7 @@ from tenacity import (
     wait_fixed,
 )
 from typing import List, Dict, Union, Any, Tuple
-from BlogAnalysis.data import get_database, get_response_from_database, add_to_database
+from BlogAnalysis.data import get_database, get_response_from_database, add_to_database, BlogPost
 
 
 load_dotenv()
@@ -80,32 +80,31 @@ def calculate_md5(postbody: str, promptkey: str) -> str:
     return md5_hash
 
 
-def make_features(post: Tuple[str, datetime, str]) -> Dict[str, Any]:
-    title, date, body = post
+def make_features(post: BlogPost) -> Dict[str, Any]:
     features = {
-        "word_count": len(body.split()),
-        "day_of_week": date.strftime("%A"),
-        "age_of_emily": (date - datetime(1991, 1, 9).date()).days / 365.25,  # close enough
-        "topic": get_gpt(body, "topic"),
-        "age_estimate": extract_numeral(get_gpt(body, "age"))
+        "word_count": len(post.body.split()),
+        "day_of_week": post.date.strftime("%A"),
+        "age_of_emily": (post.date - datetime(1991, 1, 9).date()).days / 365.25,  # close enough
+        "topic": get_gpt(post.body, "topic"),
+        "age_estimate": extract_numeral(get_gpt(post.body, "age"))
     }
     return features
 
 
-def add_features_to_dataset(dataset: List[Tuple[str, datetime, str]]):
+def add_features_to_dataset(dataset: List[BlogPost]) -> List[Tuple[BlogPost, Dict[str, Any]]]:
     dataset_with_features = []
     for post in dataset:
         features = make_features(post)
-        post_with_features = (*post, features)
+        post_with_features = (post, features)
         dataset_with_features.append(post_with_features)
     return dataset_with_features
 
 
-def preview_features(dataset_with_features: List[Tuple[str, datetime, str, Dict[str, Any]]]) -> None:
+def preview_features(dataset_with_features: List[Tuple[BlogPost, Dict[str, Any]]]) -> None:
     for blogpost in dataset_with_features:
-        title, date, content, features = blogpost
-        print(f"Title: {title} | Date: {date}")
-        print(f"Content: {content[:80].lstrip()}...")
+        post, features = blogpost
+        print(f"Title: {post.title} | Date: {post.date}")
+        print(f"Content: {post.body[:80].lstrip()}...")
         print("Features:")
         for feature, value in features.items():
             print(f"  {feature}: {value}")
@@ -114,5 +113,5 @@ def preview_features(dataset_with_features: List[Tuple[str, datetime, str, Dict[
 
 def show_summaries(dataset_with_features):
     for blogpost in dataset_with_features:
-        title, date, content, features = blogpost
+        post, features = blogpost
         print(features["topic"])

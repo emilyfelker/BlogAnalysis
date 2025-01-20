@@ -1,15 +1,44 @@
+from __future__ import annotations
 import os
 import sqlite3
 from bs4 import BeautifulSoup
-from datetime import datetime
-from typing import List, Tuple
+from datetime import datetime, date
+from typing import List, Dict, Any
+from pydantic import BaseModel
+
+
+class BlogPost(BaseModel):
+    title: str
+    date: date
+    body: str
+
+    @staticmethod
+    def get_info_for_post(location: str) -> BlogPost:
+        with open(location, 'r') as file:
+            post = file.read()
+        soup = BeautifulSoup(post, 'html.parser')
+
+        # Extract the title
+        title = soup.find('title').text.split('|')[0].strip()
+
+        # Extract the date
+        date_str = soup.find('h3', class_='groupname date').find('span').text
+        date = datetime.strptime(date_str, "%A, %d %B %Y").date()
+
+        # Extract the body
+        biggest = max(soup.find_all('div', class_='details'), key=len)
+        content_selection = str(biggest).split('<div class="itemfooter">')[0].split("</h4>")[-1]
+        content_formatted = content_selection.replace("<br/>", "\n")
+        body = BeautifulSoup(content_formatted, 'html.parser').text
+
+        return BlogPost(title=title, date=date, body=body)
 
 
 def list_dirs(folder_path: str) -> List[str]:
     return [d for d in os.listdir(folder_path) if os.path.isdir(os.path.join(folder_path, d))]
 
 
-def get_blogpost_dataset(directory: str, number_of_files: int = -1) -> List[Tuple[str, datetime, str]]:
+def get_blogpost_dataset(directory: str, number_of_files: int = -1) -> List[BlogPost]:
     blogpost_dataset = []
     for year in list_dirs(directory):  # loop through years
         for month in list_dirs(directory + "/" + year):  # loop through months
@@ -17,27 +46,12 @@ def get_blogpost_dataset(directory: str, number_of_files: int = -1) -> List[Tupl
                 if not filename.endswith(".htm"):
                     continue
                 full_path = os.path.join(directory, year, month, filename)
-                blogpost_dataset.append(get_info_for_post(full_path))  # add relevant info to dataset
+                blogpost_dataset.append(BlogPost.get_info_for_post(full_path))  # add relevant info to dataset
                 if len(blogpost_dataset) == number_of_files:
                     return blogpost_dataset
     return blogpost_dataset
 
 
-def get_info_for_post(location: str) -> Tuple[str, datetime.date, str]:
-    with open(location, 'r') as file:
-        post = file.read()
-    soup = BeautifulSoup(post, 'html.parser')
-    # get post title
-    title = soup.find('title').text.split('|')[0].strip()
-    # get post date
-    date_str = soup.find('h3', class_='groupname date').find('span').text
-    date = datetime.strptime(date_str, "%A, %d %B %Y").date()
-    # get post body
-    biggest = max(soup.find_all('div', class_='details'), key=len)
-    content_selection = str(biggest).split('<div class="itemfooter">')[0].split("</h4>")[-1]
-    content_formatted = content_selection.replace("<br/>", "\n")
-    body = BeautifulSoup(content_formatted, 'html.parser').text
-    return title, date, body
 
 
 def get_database(location: str = "data/gpt_data.db"):
